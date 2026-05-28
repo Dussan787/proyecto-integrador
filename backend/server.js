@@ -20,6 +20,26 @@ app.use(cors({
 app.use(express.json());
 
 // ── Health check ──────────────────────────────────────────────────────────────
+app.get('/api/setup', async (req, res) => {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS tasks (
+      id SERIAL PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT DEFAULT '',
+      completed BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    )`);
+    await pool.query(`INSERT INTO tasks (title, description, completed) VALUES
+      ('Instalar Ubuntu Server', 'Crear VM en VirtualBox', true),
+      ('Instalar Docker', 'Seguir documentacion oficial', true),
+      ('Desplegar en cloud', 'Usar Render como proveedor', false)
+    `);
+    res.json({ status: 'ok', message: 'Tabla creada e iniciada' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.get('/api/health', async (req, res) => {
   try {
     await pool.query('SELECT 1');
