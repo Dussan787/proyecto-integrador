@@ -14,7 +14,9 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD || 'secret123',
 });
 
-app.use(cors());
+app.use(cors({
+  origin: '*'
+}));
 app.use(express.json());
 
 // ── Health check ──────────────────────────────────────────────────────────────
