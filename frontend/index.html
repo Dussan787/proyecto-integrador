@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de Tareas — Proyecto Integrador</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --danger: #f85149;
+    --warn: #d29922;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --radius: 10px;
+    --font: 'DM Sans', system-ui, sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Header */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .status-badge {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; font-family: var(--mono);
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--danger);
+    transition: background 0.4s;
+  }
+
+  .status-dot.ok { background: var(--accent2); }
+
+  /* Main */
+  main {
+    max-width: 720px;
+    margin: 40px auto;
+    padding: 0 24px;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+  }
+
+  .stat-number {
+    font-size: 28px;
+    font-weight: 600;
+    font-family: var(--mono);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .stat-number.blue  { color: var(--accent); }
+  .stat-number.green { color: var(--accent2); }
+  .stat-number.warn  { color: var(--warn); }
+
+  /* Form */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .form-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 14px;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  input[type="text"], textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    padding: 10px 14px;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  input[type="text"] { flex: 1; height: 40px; }
+  textarea { width: 100%; height: 70px; resize: vertical; }
+
+  input[type="text"]:focus,
+  textarea:focus { border-color: var(--accent); }
+
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+
+  .btn {
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 18px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    height: 40px;
+  }
+
+  .btn-primary:hover { background: #79c0ff; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Task list */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+
+  .filter-btns {
+    display: flex;
+    gap: 4px;
+  }
+
+  .filter-btn {
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 12px;
+    padding: 4px 10px;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active {
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  /* Task items */
+  #task-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .task-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    transition: border-color 0.2s, background 0.2s;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .task-item:hover { border-color: #484f58; }
+
+  .task-item.done {
+    background: var(--surface2);
+    opacity: 0.65;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .task-check {
+    width: 18px; height: 18px;
+    accent-color: var(--accent2);
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .task-body { flex: 1; min-width: 0; }
+
+  .task-title {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .task-item.done .task-title {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .task-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .task-meta {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: #484f58;
+    margin-top: 6px;
+  }
+
+  .task-delete {
+    background: none;
+    border: none;
+    color: #484f58;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+
+  .task-delete:hover { color: var(--danger); }
+
+  /* Empty state */
+  .empty {
+    text-align: center;
+    padding: 48px 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 13px;
+    padding: 12px 18px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(8px);
+    transition: all 0.25s;
+    z-index: 100;
+  }
+
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: #484f58;
+    padding: 32px 0 24px;
+  }
+
+  footer span { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">✓</div>
+    TaskManager PI
+  </div>
+  <div class="status-badge">
+    <div class="status-dot" id="status-dot"></div>
+    <span id="status-text">verificando...</span>
+  </div>
+</header>
+
+<main>
+  <h1>Gestor de Tareas</h1>
+  <p class="subtitle">Proyecto Integrador — Sistemas Operativos · Frontend + Backend + PostgreSQL · Docker</p>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number blue" id="stat-total">—</div>
+      <div class="stat-label">Total tareas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number green" id="stat-done">—</div>
+      <div class="stat-label">Completadas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number warn" id="stat-pending">—</div>
+      <div class="stat-label">Pendientes</div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Nueva tarea</div>
+    <div class="form-row">
+      <input type="text" id="task-title" placeholder="Título de la tarea…" maxlength="255">
+      <button class="btn btn-primary" onclick="createTask()" id="btn-create">+ Agregar</button>
+    </div>
+    <textarea id="task-desc" placeholder="Descripción (opcional)…"></textarea>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Tareas</div>
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('all', this)">Todas</button>
+      <button class="filter-btn" onclick="setFilter('pending', this)">Pendientes</button>
+      <button class="filter-btn" onclick="setFilter('done', this)">Completadas</button>
+    </div>
+  </div>
+
+  <div id="task-list"></div>
+</main>
+
+<footer>
+  frontend → <span>nginx</span> · backend → <span>node:20</span> · db → <span>postgres:15</span> · orquestación → <span>docker compose</span>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+  // ── Configuracion ──────────────────────────────────────────────────────────
+  // En produccion, el frontend llama al backend por el mismo host en puerto 3000
+  // En desarrollo local, apunta a localhost:3000
+  const API = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000'
+    : `http://${window.location.hostname}:3000`;
+
+  let tasks = [];
+  let filter = 'all';
+
+  // ── Utilidades ─────────────────────────────────────────────────────────────
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+  }
+
+  function fmtDate(iso) {
+    const d = new Date(iso);
+    return d.toLocaleDateString('es-CO', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ── Estado de la API ───────────────────────────────────────────────────────
+  async function checkHealth() {
+    try {
+      const r = await fetch(`${API}/api/health`);
+      const data = await r.json();
+      const ok = data.status === 'ok';
+      document.getElementById('status-dot').className = 'status-dot' + (ok ? ' ok' : '');
+      document.getElementById('status-text').textContent = ok ? 'API conectada' : 'API sin DB';
+    } catch {
+      document.getElementById('status-text').textContent = 'API offline';
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  function render() {
+    const visible = tasks.filter(t =>
+      filter === 'all'     ? true :
+      filter === 'done'    ? t.completed :
+      /* pending */          !t.completed
+    );
+
+    const total   = tasks.length;
+    const done    = tasks.filter(t => t.completed).length;
+    const pending = total - done;
+
+    document.getElementById('stat-total').textContent   = total;
+    document.getElementById('stat-done').textContent    = done;
+    document.getElementById('stat-pending').textContent = pending;
+
+    const list = document.getElementById('task-list');
+
+    if (visible.length === 0) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">${filter === 'done' ? '🎉' : '📋'}</div>
+          ${filter === 'done' ? 'Sin tareas completadas aún.' : 'No hay tareas aquí.'}
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = visible.map(t => `
+      <div class="task-item ${t.completed ? 'done' : ''}" id="task-${t.id}">
+        <input type="checkbox" class="task-check"
+          ${t.completed ? 'checked' : ''}
+          onchange="toggleTask(${t.id}, this.checked)">
+        <div class="task-body">
+          <div class="task-title">${escHtml(t.title)}</div>
+          ${t.description ? `<div class="task-desc">${escHtml(t.description)}</div>` : ''}
+          <div class="task-meta">#${t.id} · creada ${fmtDate(t.created_at)}</div>
+        </div>
+        <button class="task-delete" onclick="deleteTask(${t.id})" title="Eliminar">×</button>
+      </div>
+    `).join('');
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+  }
+
+  // ── CRUD ───────────────────────────────────────────────────────────────────
+  async function loadTasks() {
+    try {
+      const r = await fetch(`${API}/api/tasks`);
+      tasks = await r.json();
+      render();
+    } catch (err) {
+      console.error('Error cargando tareas:', err);
+      document.getElementById('task-list').innerHTML =
+        '<div class="empty"><div class="empty-icon">⚠️</div>No se pudo conectar al backend.</div>';
+    }
+  }
+
+  async function createTask() {
+    const titleEl = document.getElementById('task-title');
+    const descEl  = document.getElementById('task-desc');
+    const title   = titleEl.value.trim();
+    if (!title) { titleEl.focus(); return; }
+
+    const btn = document.getElementById('btn-create');
+    btn.disabled = true;
+
+    try {
+      const r = await fetch(`${API}/api/tasks`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description: descEl.value.trim() })
+      });
+      const task = await r.json();
+      tasks.unshift(task);
+      titleEl.value = '';
+      descEl.value  = '';
+      render();
+      toast('✓ Tarea creada');
+    } catch (err) {
+      toast('Error al crear tarea');
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function toggleTask(id, completed) {
+    try {
+      const r = await fetch(`${API}/api/tasks/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed })
+      });
+      const updated = await r.json();
+      tasks = tasks.map(t => t.id === id ? updated : t);
+      render();
+    } catch (err) {
+      console.error('Error actualizando tarea:', err);
+      toast('Error al actualizar');
+    }
+  }
+
+  async function deleteTask(id) {
+    try {
+      await fetch(`${API}/api/tasks/${id}`, { method: 'DELETE' });
+      tasks = tasks.filter(t => t.id !== id);
+      render();
+      toast('Tarea eliminada');
+    } catch (err) {
+      console.error('Error eliminando tarea:', err);
+      toast('Error al eliminar');
+    }
+  }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  // Enter para crear tarea rapido
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('task-title').addEventListener('keydown', e => {
+      if (e.key === 'Enter') createTask();
+    });
+    checkHealth();
+    loadTasks();
+    setInterval(checkHealth, 30000);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Variables de entorno (datos sensibles - NUNCA subir a GitHub)
+.env
+
+# Logs generados por el script
+logs/
+
+# Backups de la base de datos
+backups/
+
+# Modulos de Node (se instalan via Dockerfile)
+backend/node_modules/
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
