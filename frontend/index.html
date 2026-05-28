@@ -421,9 +421,7 @@
   // ── Configuracion ──────────────────────────────────────────────────────────
   // En produccion, el frontend llama al backend por el mismo host en puerto 3000
   // En desarrollo local, apunta a localhost:3000
-  const API = window.location.hostname === 'localhost'
-    ? 'http://localhost:3000'
-    : `http://${window.location.hostname}:3000`;
+  const API = 'https://pi-backend-d3h0.onrender.com';
 
   let tasks = [];
   let filter = 'all';
